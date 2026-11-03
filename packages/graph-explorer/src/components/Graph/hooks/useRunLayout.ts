@@ -46,6 +46,7 @@ function useUpdateLayout({
 
     // Only lock the previous nodes if the layout is the same, the graph has been updated, and there is at least one node.
     const shouldLock =
+      layout !== "F_COSE" &&
       previousLayoutRef.current === layout &&
       previousGraphStructureVersionRef.current !== graphStructureVersion &&
       previousNodesRef.current.size > 0;
