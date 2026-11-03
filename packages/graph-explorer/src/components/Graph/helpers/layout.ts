@@ -32,7 +32,9 @@ export const runLayout = (
     if (layoutName === "F_COSE") {
       // using the fixedNodeConstraint of the newer version of cytoscape-fcose to achieve a better relayout when
       // there are locked nodes
-      const nodesToRunLayout = cyReference.nodes("[!__isGroupNode]:locked");
+      const nodesToRunLayout = cyReference.nodes(
+        "[!__isGroupNode]:childless:locked",
+      );
       _layout.fixedNodeConstraint = nodesToRunLayout.map(node => ({
         nodeId: node.data().id,
         position: node.position(),

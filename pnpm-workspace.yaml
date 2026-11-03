@@ -2,6 +2,7 @@ packages:
   - packages/*
 
 overrides:
+  "cytoscape-complexity-management>cmgm": "-"
   semver@<7.0.0: ">=7.7.3"
   "@babel/core@<7.29.1": ">=7.29.1 <8"
   brace-expansion@>=5.0.0 <5.0.7: ">=5.0.7"
@@ -14,6 +15,12 @@ overrides:
   picomatch@>=4.0.0 <4.0.4: ">=4.0.4"
   yaml@>=2.0.0 <2.8.3: ">=2.8.3"
   vite@*: "catalog:"
+
+# Upstream uses a moving Git dependency; resolve our pinned direct dependency as a peer.
+packageExtensions:
+  cytoscape-complexity-management@1.0.0:
+    peerDependencies:
+      cmgm: "*"
 
 # This prevents malicious packages from being installed by waiting 24 hours
 # after a package is published. See https://pnpm.io/settings#minimumreleaseage
@@ -44,3 +51,5 @@ peerDependencyRules:
     - vite
   allowedVersions:
     vite: "*"
+patchedDependencies:
+  cytoscape-complexity-management@1.0.0: patches/cytoscape-complexity-management@1.0.0.patch

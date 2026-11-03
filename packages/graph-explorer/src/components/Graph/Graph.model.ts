@@ -57,6 +57,7 @@ export type Selection = {
 export type GraphNode = {
   data: {
     id: string;
+    parent?: string;
   };
 };
 

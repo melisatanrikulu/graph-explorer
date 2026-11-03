@@ -122,6 +122,7 @@ const vertexEntrySchema = z
   );
 
 const edgeEntrySchema = z.object({
+  useAsNesting: z.boolean().optional(),
   displayLabel: z.string().optional(),
   displayNameAttribute: z.string().optional(),
   labelColor: z.string().optional(),

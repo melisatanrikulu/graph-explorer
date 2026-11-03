@@ -16,18 +16,20 @@ import { type LayoutName, layoutNameSchema } from "@/core/graphLayout";
 
 export function SelectLayout({
   layoutAtom,
+  compound = false,
   ...props
 }: ComponentPropsWithRef<typeof SelectTrigger> & {
   layoutAtom: WritableAtom<LayoutName, [LayoutName], unknown>;
+  compound?: boolean;
 }) {
   const [value, setValue] = useAtom(layoutAtom);
 
   return (
     <Select
-      value={value}
+      value={compound ? "F_COSE" : value}
       onValueChange={value => setValue(layoutNameSchema.parse(value))}
     >
-      <SelectTrigger {...props}>
+      <SelectTrigger {...props} disabled={compound || props.disabled}>
         <div className="flex flex-col items-start justify-center gap-0">
           <div className="text-muted-foreground text-xs leading-none">
             Layout

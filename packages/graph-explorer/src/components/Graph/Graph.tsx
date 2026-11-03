@@ -1,9 +1,11 @@
 import cytoscape from "cytoscape";
 import cyCanvas from "cytoscape-canvas";
+import complexityManagement from "cytoscape-complexity-management";
 import d3Force from "cytoscape-d3-force";
 import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
 import klay from "cytoscape-klay";
+import layoutUtilities from "cytoscape-layout-utilities";
 import {
   type ComponentPropsWithoutRef,
   memo,
@@ -15,6 +17,7 @@ import {
 import { DEFAULT_LAYOUT_NAME, type LayoutName } from "@/core/graphLayout";
 import { cn } from "@/utils";
 
+import type { ComplexityController } from "./complexity";
 import type {
   Config,
   CytoscapeType,
@@ -28,6 +31,7 @@ import type { ConnectionsFilterConfig } from "./hooks/useConnectionsFilter";
 import type { StyleSelector } from "./hooks/useManageStyles";
 import type { BadgeRenderer } from "./hooks/useRenderBadges";
 
+import { getComplexityController } from "./complexity";
 import { useGraphRef } from "./GraphContext";
 import { runLayout } from "./helpers/layout";
 import useAddClickEvents from "./hooks/useAddClickEvents";
@@ -42,18 +46,22 @@ import useManageStyles from "./hooks/useManageStyles";
 import useRenderBadges from "./hooks/useRenderBadges";
 import useUpdateLayout from "./hooks/useRunLayout";
 import useUpdateGraphElements from "./hooks/useUpdateGraphElements";
-import layoutUtilities from "cytoscape-layout-utilities";
 
 cytoscape.use(klay);
 cytoscape.use(dagre);
 cytoscape.use(d3Force);
 cytoscape.use(fcose);
+cytoscape.use(complexityManagement);
 cytoscape.use(layoutUtilities);
 cyCanvas(cytoscape);
 
 const EMPTY_SET = new Set<string>();
 
-export type GraphRef = { cytoscape?: CytoscapeType; runLayout(): void };
+export type GraphRef = {
+  cytoscape?: CytoscapeType;
+  complexity?: ComplexityController;
+  runLayout(): void;
+};
 
 export interface GraphProps<
   TNode extends object = any,
@@ -67,6 +75,8 @@ export interface GraphProps<
   //Data inputs
   nodes: GraphNode[];
   edges: GraphEdge[];
+  manageComplexity?: boolean;
+  filteredElementIds?: ReadonlySet<string>;
   //styling
   styles?: {
     [selector: string]: StyleSelector;
@@ -148,6 +158,8 @@ export const Graph = ({
   primaryNodeId,
   nodes,
   edges,
+  manageComplexity = false,
+  filteredElementIds = EMPTY_SET,
   selectedNodesIds,
   selectedEdgesIds,
   selectedGroupsIds,
@@ -268,6 +280,8 @@ export const Graph = ({
     edges,
     lockedNodesIds,
     disableLockOnChange,
+    manageComplexity,
+    filteredElementIds,
   });
 
   useManageElementsSelection(
@@ -355,6 +369,7 @@ export const Graph = ({
     additionalLayoutsConfig,
     graphStructureVersion,
     mounted,
+    manageComplexity,
   });
 
   // Set the graphRef context value so that the GraphContextProvider can access the graphRef
@@ -363,6 +378,8 @@ export const Graph = ({
     graphRef,
     () => ({
       cytoscape: cy,
+      complexity:
+        manageComplexity && cy ? getComplexityController(cy) : undefined,
       runLayout: () => {
         if (!cy) {
           return;
@@ -370,7 +387,7 @@ export const Graph = ({
         runLayout(cy, layout, additionalLayoutsConfig, true);
       },
     }),
-    [additionalLayoutsConfig, cy, layout],
+    [additionalLayoutsConfig, cy, layout, manageComplexity],
   );
 
   const isEmpty = !nodes.length && !edges.length;

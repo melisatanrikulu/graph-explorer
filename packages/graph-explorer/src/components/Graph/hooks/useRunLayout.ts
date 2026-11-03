@@ -18,6 +18,7 @@ interface UseUpdateLayout {
   onLayoutUpdated?: (cy: CytoscapeType, layout: string) => void;
   graphStructureVersion: number;
   mounted: boolean;
+  manageComplexity?: boolean;
 }
 
 /**
@@ -33,6 +34,7 @@ function useUpdateLayout({
   useAnimation,
   graphStructureVersion,
   mounted,
+  manageComplexity = false,
 }: UseUpdateLayout) {
   const previousNodesRef = useRef(new Set<string>());
   const previousLayoutRef = useRef(layout);
@@ -55,7 +57,7 @@ function useUpdateLayout({
     const nodesInGraph = cy.nodes();
     const isIncremental = previousNodesRef.current.size > 0;
 
-    if (layout === "F_COSE" && isIncremental) {
+    if (layout === "F_COSE" && isIncremental && !manageComplexity) {
       const newNodes = nodesInGraph.filter(
         node => !previousNodesRef.current.has(node.id()),
       );
@@ -104,6 +106,7 @@ function useUpdateLayout({
     onLayoutUpdated,
     graphStructureVersion,
     mounted,
+    manageComplexity,
   ]);
 }
 

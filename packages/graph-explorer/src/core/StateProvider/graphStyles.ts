@@ -113,6 +113,7 @@ export type EdgeVisualStyle = LabelVisualStyle & {
 export type EdgeTypeStyle = {
   displayLabel?: string;
   displayNameAttribute: string;
+  useAsNesting: boolean;
 };
 
 /** The style for the specified vertex type as stored in local storage. */
@@ -167,6 +168,7 @@ export const appDefaultNodeLabelStyle = {
 
 /** The default values to use when no user provided value is given. */
 export const appDefaultEdgeStyle = {
+  useAsNesting: false,
   displayNameAttribute: RESERVED_TYPES_PROPERTY,
   labelColor: "#17457b",
   labelBackgroundOpacity: 0.7,

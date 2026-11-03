@@ -5,6 +5,7 @@ import {
   ColorPopover,
   EdgePreview,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldLegend,
@@ -16,6 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
 } from "@/components";
 import {
   Dialog,
@@ -114,6 +116,22 @@ function Content({ edgeType }: { edgeType: EdgeType }) {
                   className="zoom-90 px-4 py-3"
                 />
               </PreviewSurface>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="use-as-nesting">
+                Use as nesting relationship
+              </FieldLabel>
+              <Switch
+                id="use-as-nesting"
+                checked={edgeStyle.useAsNesting}
+                onCheckedChange={useAsNesting => setEdgeStyle({ useAsNesting })}
+                aria-describedby="use-as-nesting-description"
+              />
+              <FieldDescription id="use-as-nesting-description">
+                Place target nodes inside source nodes instead of drawing these
+                edges. Nesting uses the force-directed layout.
+              </FieldDescription>
             </Field>
 
             {hideDisplayNameAttribute ? null : (

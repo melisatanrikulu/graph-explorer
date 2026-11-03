@@ -22,6 +22,7 @@ import {
 } from "@/components";
 import {
   ClearCanvasButton,
+  ComplexityControls,
   DownloadScreenshotButton,
   Graph,
   GraphProvider,
@@ -42,8 +43,7 @@ import {
   type RenderedVertex,
   type RenderedVertexId,
   useDisplayVertexTypeConfigs,
-  useRenderedEdges,
-  useRenderedVertices,
+  useComplexityGraph,
 } from "@/core";
 import { edgesOutOfFocusIdsAtom } from "@/core/StateProvider/edges";
 import { nodesOutOfFocusIdsAtom } from "@/core/StateProvider/nodes";
@@ -148,8 +148,13 @@ function GraphViewerContent({
 
   const layout = useAtomValue(graphLayoutSelectionAtom);
 
-  const nodes = useRenderedVertices();
-  const edges = useRenderedEdges();
+  const {
+    vertices: nodes,
+    edges,
+    hasInvalidNesting,
+    filteredIds,
+  } = useComplexityGraph();
+  const hasNesting = nodes.some(node => node.data.parent !== undefined);
 
   const isEmpty = !nodes.length && !edges.length;
 
@@ -162,8 +167,10 @@ function GraphViewerContent({
             <SelectLayout
               className="max-w-64 min-w-auto"
               layoutAtom={graphLayoutSelectionAtom}
+              compound={hasNesting}
             />
             <RerunLayoutButton />
+            <ComplexityControls hasGroups={hasNesting} />
             <ZoomToFitButton />
             <div className="grow" />
             <DownloadScreenshotButton />
@@ -184,10 +191,18 @@ function GraphViewerContent({
             </Button>
           </PanelHeaderActions>
         </PanelHeader>
+        {hasInvalidNesting && (
+          <output className="bg-warning-subtle text-warning-foreground px-3 py-2 text-sm">
+            Some relationships remain ordinary edges because they contain cycles
+            or assign multiple parents.
+          </output>
+        )}
         <PanelContent className="bg-workspace-canvas grid" ref={parentRef}>
           <Graph
             nodes={nodes}
             edges={edges}
+            manageComplexity
+            filteredElementIds={filteredIds}
             badgesEnabled={false}
             getNodeBadges={getNodeBadges(nodesOutRenderedIds)}
             selectedNodesIds={selectedVertices}
@@ -200,7 +215,7 @@ function GraphViewerContent({
             onEdgeRightClick={onEdgeRightClick}
             onGraphRightClick={onGraphRightClick}
             styles={styles}
-            layout={layout}
+            layout={hasNesting ? "F_COSE" : layout}
             className="col-start-1 row-start-1 min-h-0 min-w-0"
             onContextMenu={onContextMenu}
           />

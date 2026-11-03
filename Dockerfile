@@ -24,6 +24,7 @@ RUN vp install --frozen-lockfile && \
 # workspace dependencies are installed: Vite bundles the client's dependencies
 # into dist, so nothing at runtime loads them.
 FROM toolchain AS deps
+COPY --chown=vp:vp patches ./patches
 COPY --chown=vp:vp package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc .node-version ./
 COPY --chown=vp:vp packages/graph-explorer-proxy-server/package.json packages/graph-explorer-proxy-server/
 COPY --chown=vp:vp packages/shared/package.json packages/shared/

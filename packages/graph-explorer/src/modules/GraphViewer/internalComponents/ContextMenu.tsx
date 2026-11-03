@@ -7,17 +7,24 @@ import type {
 import { useSetAtom } from "jotai";
 import {
   CircleSlash2,
+  EyeOffIcon,
+  FoldVerticalIcon,
   FullscreenIcon,
   ImageDownIcon,
   MinusCircleIcon,
   RefreshCwIcon,
   ZoomInIcon,
   ZoomOutIcon,
+  UnfoldVerticalIcon,
 } from "lucide-react";
 import { createContext, use } from "react";
 
 import { Divider, EdgeIcon, GraphIcon, StylingIcon } from "@/components";
-import { useGraphGlobalActions } from "@/components/Graph";
+import {
+  useCompoundState,
+  useGraphGlobalActions,
+  useGraphRef,
+} from "@/components/Graph";
 import {
   CenterGraphIcon,
   DetailsIcon,
@@ -25,6 +32,8 @@ import {
 } from "@/components/icons";
 import {
   type EdgeId,
+  createRenderedEdgeId,
+  createRenderedVertexId,
   graphViewLayoutAtom,
   type GraphViewSidebarItem,
   useDisplayEdgeInCanvas,
@@ -91,6 +100,15 @@ export default function ContextMenu({
 }
 
 function SingleVertexMenu({ vertexId }: { vertexId: VertexId }) {
+  const graphRef = useGraphRef();
+  const compoundState = useCompoundState(createRenderedVertexId(vertexId));
+  function handleCompound(action: "collapse" | "expand" | "hide") {
+    const graph = graphRef.current;
+    if (!graph?.cytoscape || !graph.complexity) return;
+    graph.complexity[action](
+      graph.cytoscape.getElementById(createRenderedVertexId(vertexId)).nodes(),
+    );
+  }
   const t = useTranslations();
   const vertex = useDisplayVertex(vertexId);
   const setLayout = useSetAtom(graphViewLayoutAtom);
@@ -134,6 +152,19 @@ function SingleVertexMenu({ vertexId }: { vertexId: VertexId }) {
         <ExpandGraphIcon />
         Expand {t("node").toLowerCase()}
       </ContextMenuItem>
+      {compoundState === "expanded" && (
+        <ContextMenuItem onClick={() => handleCompound("collapse")}>
+          <FoldVerticalIcon /> Collapse group
+        </ContextMenuItem>
+      )}
+      {compoundState === "collapsed" && (
+        <ContextMenuItem onClick={() => handleCompound("expand")}>
+          <UnfoldVerticalIcon /> Expand group
+        </ContextMenuItem>
+      )}
+      <ContextMenuItem onClick={() => handleCompound("hide")}>
+        <EyeOffIcon /> Hide {t("node").toLowerCase()}
+      </ContextMenuItem>
       <ContextMenuItem onClick={handleRefresh}>
         <RefreshCwIcon />
         Refresh {t("node").toLowerCase()}
@@ -170,6 +201,14 @@ function SingleVertexMenu({ vertexId }: { vertexId: VertexId }) {
 }
 
 function SingleEdgeMenu({ edgeId }: { edgeId: EdgeId }) {
+  const graphRef = useGraphRef();
+  function handleHide() {
+    const graph = graphRef.current;
+    if (!graph?.cytoscape || !graph.complexity) return;
+    graph.complexity.hide(
+      graph.cytoscape.getElementById(createRenderedEdgeId(edgeId)),
+    );
+  }
   const t = useTranslations();
   const edge = useDisplayEdgeInCanvas(edgeId);
   const setLayout = useSetAtom(graphViewLayoutAtom);
@@ -200,6 +239,9 @@ function SingleEdgeMenu({ edgeId }: { edgeId: EdgeId }) {
         <EdgeIcon />
         {edge.displayTypes}
       </ContextMenuTitle>
+      <ContextMenuItem onClick={handleHide}>
+        <EyeOffIcon /> Hide {t("edge").toLowerCase()}
+      </ContextMenuItem>
       <Divider />
       <ContextMenuItem onClick={handleRefresh}>
         <RefreshCwIcon />

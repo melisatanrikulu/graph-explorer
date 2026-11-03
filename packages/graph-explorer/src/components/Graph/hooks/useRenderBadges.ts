@@ -120,6 +120,7 @@ const useRenderBadges = ({
           const nodeData = node.data() as RenderedVertex["data"];
 
           if (
+            node.isParent() ||
             node.style("display") === "none" ||
             node.effectiveOpacity() === 0
           ) {
