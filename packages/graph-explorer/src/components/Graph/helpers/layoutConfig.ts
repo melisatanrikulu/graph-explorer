@@ -179,10 +179,10 @@ const cose = {
   // - "draft" only applies spectral layout
   // - "default" improves the quality with incremental layout (fast cooling rate)
   // - "proof" improves the quality with incremental layout (slow cooling rate)
-  quality: "default",
+  quality: "proof",
   // Use random node positions at beginning of layout
   // if this is set to false, then quality option must be "proof"
-  randomize: true,
+  randomize: false,
   // Type of layout animation. The option set is {'during', 'end', false}
   animate: "end",
   // Duration of animation in ms, if enabled

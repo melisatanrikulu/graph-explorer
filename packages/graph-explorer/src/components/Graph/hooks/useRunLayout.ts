@@ -79,17 +79,7 @@ function useUpdateLayout({
       });
     }
 
-    // Perform the layout for any new nodes
-    const layoutConfig = {
-      ...additionalLayoutsConfig,
-      F_COSE: {
-        ...additionalLayoutsConfig?.F_COSE,
-        quality: isIncremental ? "proof" : "default",
-        randomize: !isIncremental,
-      },
-    };
-
-    runLayout(cy, layout, layoutConfig, useAnimation);
+    runLayout(cy, layout, additionalLayoutsConfig, useAnimation);
     onLayoutUpdated?.(cy, layout);
 
     if (shouldLock) {
