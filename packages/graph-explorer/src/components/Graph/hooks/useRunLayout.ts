@@ -52,6 +52,18 @@ function useUpdateLayout({
 
     // Reduce the number of iterations over the node collection
     const nodesInGraph = cy.nodes();
+    const isIncremental = previousNodesRef.current.size > 0;
+
+    if (layout === "F_COSE" && isIncremental) {
+      const newNodes = nodesInGraph.filter(
+        node => !previousNodesRef.current.has(node.id()),
+      );
+
+      if (newNodes.length > 0) {
+        cy.layoutUtilities({ idealEdgeLength: 100 }).placeNewNodes(newNodes);
+      }
+    }
+
     const nodesToLock = shouldLock
       ? nodesInGraph.filter(cyNode =>
           previousNodesRef.current.has(cyNode.data().id),
@@ -68,7 +80,16 @@ function useUpdateLayout({
     }
 
     // Perform the layout for any new nodes
-    runLayout(cy, layout, additionalLayoutsConfig, useAnimation);
+    const layoutConfig = {
+      ...additionalLayoutsConfig,
+      F_COSE: {
+        ...additionalLayoutsConfig?.F_COSE,
+        quality: isIncremental ? "proof" : "default",
+        randomize: !isIncremental,
+      },
+    };
+
+    runLayout(cy, layout, layoutConfig, useAnimation);
     onLayoutUpdated?.(cy, layout);
 
     if (shouldLock) {

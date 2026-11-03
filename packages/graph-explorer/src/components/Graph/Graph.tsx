@@ -42,11 +42,13 @@ import useManageStyles from "./hooks/useManageStyles";
 import useRenderBadges from "./hooks/useRenderBadges";
 import useUpdateLayout from "./hooks/useRunLayout";
 import useUpdateGraphElements from "./hooks/useUpdateGraphElements";
+import layoutUtilities from "cytoscape-layout-utilities";
 
 cytoscape.use(klay);
 cytoscape.use(dagre);
 cytoscape.use(d3Force);
 cytoscape.use(fcose);
+cytoscape.use(layoutUtilities);
 cyCanvas(cytoscape);
 
 const EMPTY_SET = new Set<string>();
