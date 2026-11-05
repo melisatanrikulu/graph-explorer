@@ -4,6 +4,8 @@ import cloneDeep from "lodash/cloneDeep";
 
 import type { CytoscapeType, GraphEdge, GraphNode } from "../Graph.model";
 
+import { stopLayout } from "./layout";
+
 function orderByParent(nodes: GraphNode[]) {
   const ordered: GraphNode[] = [];
   const children = new Map<string, GraphNode[]>();
@@ -61,6 +63,7 @@ export function updateGraphElements(
 
   // CMGM requires parents to be added before their children.
   const elements = cloneDeep({ nodes: orderByParent(nodes), edges });
+  if (changed) stopLayout(cy);
   cy.batch(() => {
     if (parentsChanged) cy.nodes(":child").move({ parent: null });
     cy.json({ elements });

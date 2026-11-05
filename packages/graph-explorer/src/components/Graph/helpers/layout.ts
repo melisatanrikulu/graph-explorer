@@ -1,9 +1,18 @@
+import type cytoscape from "cytoscape";
+
 import type { EntityRawId } from "@/core";
 import type { LayoutName } from "@/core/graphLayout";
 
 import type { CytoscapeType } from "../Graph.model";
 
 import { availableLayoutsConfig } from "./layoutConfig";
+
+const activeLayouts = new WeakMap<CytoscapeType, cytoscape.Layouts>();
+
+export function stopLayout(cy: CytoscapeType) {
+  activeLayouts.get(cy)?.stop();
+  activeLayouts.delete(cy);
+}
 
 type ExpandedCytoscapeLayoutOptions = {
   fixedNodeConstraint?: {
@@ -26,6 +35,7 @@ export const runLayout = (
     ...additionalLayoutsConfig[layoutName],
   };
   if (_layout) {
+    stopLayout(cyReference);
     // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore: Animate is not a cytoscape.LayoutOption. Need to check
     _layout.animate = useAnimation;
@@ -41,6 +51,11 @@ export const runLayout = (
       }));
     }
     const layout = cyReference.layout(_layout as cytoscape.LayoutOptions);
+    activeLayouts.set(cyReference, layout);
+    layout.one("layoutstop", () => {
+      if (activeLayouts.get(cyReference) === layout)
+        activeLayouts.delete(cyReference);
+    });
     layout.run();
     return;
   }

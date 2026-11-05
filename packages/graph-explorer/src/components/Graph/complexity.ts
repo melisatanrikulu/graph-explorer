@@ -4,19 +4,61 @@ import { z } from "zod";
 
 import type { CytoscapeType, GraphEdge, GraphNode } from "./Graph.model";
 
+import { stopLayout } from "./helpers/layout";
 import { updateGraphElements } from "./helpers/updateGraphElements";
 
 const positionSchema = z.object({ x: z.number(), y: z.number() });
+
+function haveSameIds(a: ReadonlySet<string>, b: ReadonlySet<string>) {
+  if (a.size !== b.size) return false;
+  for (const id of a) if (!b.has(id)) return false;
+  return true;
+}
+
+function hasSameStructure(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  previousNodes: ReadonlyMap<string, GraphNode>,
+  previousEdges: ReadonlyMap<string, GraphEdge>,
+) {
+  if (
+    nodes.length !== previousNodes.size ||
+    edges.length !== previousEdges.size
+  )
+    return false;
+  for (const { data } of nodes) {
+    const previous = previousNodes.get(data.id);
+    if (!previous || previous.data.parent !== data.parent) return false;
+  }
+  for (const { data } of edges) {
+    const previous = previousEdges.get(data.id);
+    if (
+      !previous ||
+      previous.data.source !== data.source ||
+      previous.data.target !== data.target
+    )
+      return false;
+  }
+  return true;
+}
 
 export function createComplexityController(cy: CytoscapeType) {
   const api = cy.complexityManagement({ cueEnabled: false });
   const collapsed = new Set<string>();
   const hidden = new Set<string>();
   let filtered: ReadonlySet<string> = new Set();
-  let sourceNodes: GraphNode[] = [];
-  let sourceNodeIds = new Set<string>();
+  let sourceNodes = new Map<string, GraphNode>();
+  let sourceEdges = new Map<string, GraphEdge>();
+
+  function updateElementData() {
+    for (const { data } of sourceNodes.values())
+      cy.getElementById(data.id).data(data);
+    for (const { data } of sourceEdges.values())
+      cy.getElementById(data.id).data(data);
+  }
 
   function restore() {
+    stopLayout(cy);
     const shifts = cy.nodes(".cy-expand-collapse-collapsed-node").map(node => {
       const before = positionSchema.parse(
         node.data("position-before-collapse"),
@@ -35,6 +77,7 @@ export function createComplexityController(cy: CytoscapeType) {
         .descendants()
         .shift({ x: shift.x, y: shift.y });
     }
+    updateElementData();
   }
 
   function applyView() {
@@ -62,13 +105,24 @@ export function createComplexityController(cy: CytoscapeType) {
       edges: GraphEdge[],
       filteredIds: ReadonlySet<string>,
     ) {
+      if (hasSameStructure(nodes, edges, sourceNodes, sourceEdges)) {
+        for (const node of nodes) sourceNodes.set(node.data.id, node);
+        for (const edge of edges) sourceEdges.set(edge.data.id, edge);
+        updateElementData();
+        if (!haveSameIds(filtered, filteredIds)) {
+          changeView(() => {
+            filtered = filteredIds;
+          });
+        }
+        return;
+      }
       restore();
       const newPositions = new Map<string, cytoscape.Position>();
       for (const node of nodes) {
         if (
-          !sourceNodeIds.has(node.data.id) &&
+          !sourceNodes.has(node.data.id) &&
           node.data.parent !== undefined &&
-          sourceNodeIds.has(node.data.parent)
+          sourceNodes.has(node.data.parent)
         ) {
           newPositions.set(node.data.id, {
             ...cy.getElementById(node.data.parent).position(),
@@ -78,24 +132,27 @@ export function createComplexityController(cy: CytoscapeType) {
       updateGraphElements(cy, nodes, edges);
       for (const [id, position] of newPositions)
         cy.getElementById(id).position(position);
-      if (sourceNodeIds.size > 0) {
+      if (sourceNodes.size > 0) {
         const added = cy
           .nodes(":orphan:childless")
-          .filter(node => !sourceNodeIds.has(node.id()));
+          .filter(node => !sourceNodes.has(node.id()));
         if (added.length > 0)
           cy.layoutUtilities({ idealEdgeLength: 100 }).placeNewNodes(added);
       }
-      sourceNodes = nodes;
       filtered = filteredIds;
       const parents = new Set<string>();
       const ids = new Set<string>();
-      sourceNodeIds = new Set();
+      sourceNodes = new Map();
+      sourceEdges = new Map();
       for (const node of nodes) {
         ids.add(node.data.id);
-        sourceNodeIds.add(node.data.id);
+        sourceNodes.set(node.data.id, node);
         if (node.data.parent !== undefined) parents.add(node.data.parent);
       }
-      for (const edge of edges) ids.add(edge.data.id);
+      for (const edge of edges) {
+        ids.add(edge.data.id);
+        sourceEdges.set(edge.data.id, edge);
+      }
       for (const id of collapsed) if (!parents.has(id)) collapsed.delete(id);
       for (const id of hidden) if (!ids.has(id)) hidden.delete(id);
       applyView();
@@ -122,7 +179,7 @@ export function createComplexityController(cy: CytoscapeType) {
     },
     collapseAll() {
       changeView(() => {
-        for (const node of sourceNodes) {
+        for (const node of sourceNodes.values()) {
           if (node.data.parent !== undefined) collapsed.add(node.data.parent);
         }
       });
