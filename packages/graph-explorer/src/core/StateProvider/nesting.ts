@@ -20,11 +20,16 @@ export function applyNesting(
   edges: RenderedEdge[],
   nestingTypes: ReadonlySet<EdgeType>,
 ): NestedGraph {
+  const countryIds = new Set<RenderedVertexId>();
+  for (const { data } of vertices) {
+    if (data.type === "country") countryIds.add(data.id);
+  }
   const parents = new Map<RenderedVertexId, RenderedVertexId>();
   const conflicts = new Set<RenderedVertexId>();
 
   for (const { data } of edges) {
     if (!nestingTypes.has(data.type)) continue;
+    if (data.type === "contains" && !countryIds.has(data.source)) continue;
     const previous = parents.get(data.target);
     if (previous !== undefined && previous !== data.source) {
       conflicts.add(data.target);
