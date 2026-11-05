@@ -15,6 +15,14 @@ function haveSameIds(a: ReadonlySet<string>, b: ReadonlySet<string>) {
   return true;
 }
 
+function getExclusiveNeighbors(nodes: cytoscape.NodeCollection) {
+  return nodes
+    .neighborhood("node")
+    .filter(node =>
+      node.neighborhood("node").every(neighbor => nodes.contains(neighbor)),
+    );
+}
+
 function hasSameStructure(
   nodes: GraphNode[],
   edges: GraphEdge[],
@@ -189,7 +197,16 @@ export function createComplexityController(cy: CytoscapeType) {
     },
     hide(elements: cytoscape.CollectionArgument) {
       const ids = cy.collection(elements).map(element => element.id());
-      changeView(() => ids.forEach(id => hidden.add(id)));
+      changeView(() => {
+        const nodes = cy.collection().nodes();
+        for (const id of ids) {
+          hidden.add(id);
+          nodes.merge(cy.getElementById(id).nodes());
+        }
+        getExclusiveNeighbors(nodes).forEach(node => {
+          hidden.add(node.id());
+        });
+      });
     },
     showAll() {
       changeView(() => hidden.clear());
