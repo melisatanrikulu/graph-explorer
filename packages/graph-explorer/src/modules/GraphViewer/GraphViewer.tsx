@@ -56,6 +56,7 @@ import { ExportGraphButton } from "./ExportGraphButton";
 import { GraphViewerEmptyState } from "./GraphViewerEmptyState";
 import { ImportGraphButton } from "./ImportGraphButton";
 import ContextMenu from "./internalComponents/ContextMenu";
+import { MultiEdgeControls } from "./MultiEdgeControls";
 import { nestGraphElements } from "./nestGraphElements";
 import { NestingEdgeTypeSelector } from "./NestingEdgeTypeSelector";
 import useContextMenu from "./useContextMenu";
@@ -176,6 +177,7 @@ function GraphViewerContent({
               selectedEdgeTypes={nestingEdgeTypes}
               onChange={setNestingEdgeTypes}
             />
+            <MultiEdgeControls selectedNodeIds={selectedVertices} />
             <div className="grow" />
             <DownloadScreenshotButton />
             <ExportGraphButton />
