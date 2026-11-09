@@ -38,6 +38,7 @@ import {
   createRenderedVertexId,
   getEdgeIdFromRenderedEdgeId,
   getVertexIdFromRenderedVertexId,
+  type EdgeType,
   type RenderedEdgeId,
   type RenderedVertex,
   type RenderedVertexId,
@@ -55,6 +56,8 @@ import { ExportGraphButton } from "./ExportGraphButton";
 import { GraphViewerEmptyState } from "./GraphViewerEmptyState";
 import { ImportGraphButton } from "./ImportGraphButton";
 import ContextMenu from "./internalComponents/ContextMenu";
+import { nestGraphElements } from "./nestGraphElements";
+import { NestingEdgeTypeSelector } from "./NestingEdgeTypeSelector";
 import useContextMenu from "./useContextMenu";
 import { useGraphSelection } from "./useGraphSelection";
 import useGraphStyles from "./useGraphStyles";
@@ -115,6 +118,9 @@ function GraphViewerContent({
   };
 
   const [legendOpen, setLegendOpen] = useState(false);
+  const [nestingEdgeTypes, setNestingEdgeTypes] = useState<Set<EdgeType>>(
+    new Set(),
+  );
 
   const {
     clearAllLayers,
@@ -150,6 +156,7 @@ function GraphViewerContent({
 
   const nodes = useRenderedVertices();
   const edges = useRenderedEdges();
+  const nestedGraph = nestGraphElements(nodes, edges, nestingEdgeTypes);
 
   const isEmpty = !nodes.length && !edges.length;
 
@@ -165,6 +172,10 @@ function GraphViewerContent({
             />
             <RerunLayoutButton />
             <ZoomToFitButton />
+            <NestingEdgeTypeSelector
+              selectedEdgeTypes={nestingEdgeTypes}
+              onChange={setNestingEdgeTypes}
+            />
             <div className="grow" />
             <DownloadScreenshotButton />
             <ExportGraphButton />
@@ -186,8 +197,9 @@ function GraphViewerContent({
         </PanelHeader>
         <PanelContent className="bg-workspace-canvas grid" ref={parentRef}>
           <Graph
-            nodes={nodes}
-            edges={edges}
+            id="cy"
+            nodes={nestedGraph.nodes}
+            edges={nestedGraph.edges}
             badgesEnabled={false}
             getNodeBadges={getNodeBadges(nodesOutRenderedIds)}
             selectedNodesIds={selectedVertices}

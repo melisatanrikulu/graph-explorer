@@ -89,5 +89,24 @@ function createGraphStyles(
       "target-distance-from-node": 0,
     };
   }
+  styles["node:parent"] = {
+    shape: "round-rectangle",
+    "background-image": "none",
+    "background-opacity": 0.1,
+    "border-width": 1,
+    "border-opacity": 1,
+    padding: "20px",
+  };
+  styles["node.cy-expand-collapse-collapsed-node"] = {
+    "border-width": 2,
+    "border-opacity": 1,
+    "border-style": "dashed",
+  };
+  styles["edge[compound]"] = {
+    label: "data(size)",
+    "line-style": "dashed",
+    "target-arrow-shape": "none",
+    events: "no",
+  };
   return styles;
 }

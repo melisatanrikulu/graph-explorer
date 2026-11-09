@@ -172,6 +172,7 @@ catalogs:
       version: 1.4.0
 
 overrides:
+  cytoscape-complexity-management>cmgm: '-'
   semver@<7.0.0: '>=7.7.3'
   '@babel/core@<7.29.1': '>=7.29.1 <8'
   brace-expansion@>=5.0.0 <5.0.7: '>=5.0.7'
@@ -249,6 +250,9 @@ importers:
       cytoscape-canvas:
         specifier: ^3.0.1
         version: 3.0.1
+      cytoscape-complexity-management:
+        specifier: 1.0.0
+        version: 1.0.0
       cytoscape-d3-force:
         specifier: ^1.1.4
         version: 1.1.4(cytoscape@3.34.4)
@@ -3512,6 +3516,9 @@ packages:
 
   cytoscape-canvas@3.0.1:
     resolution: {integrity: sha512-R1nCLnJHGTR5fWEpNQQBPyoigdnfhnk1lOHegzmzz1Kg6yxzVf0hfdRAMa0wPAhtC4kkgyoViiIfZ/zyCqMhEQ==}
+
+  cytoscape-complexity-management@1.0.0:
+    resolution: {integrity: sha512-CrmGBWOCkJ33omzL6+5j09nnqciy28/RU6W6I8uYr8UEWfeYW6QyWlXBGhR49MaJ3sS/r5yNWmbphtTtPs/eNg==}
 
   cytoscape-d3-force@1.1.4:
     resolution: {integrity: sha512-8NjI/yEoB3YqVsdf7ud7Oh8Kyi+C9Lhh1fICmtemIo6EC1ZUtm8KcPNLkQySYO8nRS2mQKj5eVdCr7W0L8ONoQ==}
@@ -8559,6 +8566,8 @@ snapshots:
       typescript: 7.0.2
 
   cytoscape-canvas@3.0.1: {}
+
+  cytoscape-complexity-management@1.0.0: {}
 
   cytoscape-d3-force@1.1.4(cytoscape@3.34.4):
     dependencies:

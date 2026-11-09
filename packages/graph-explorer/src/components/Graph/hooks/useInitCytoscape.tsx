@@ -67,6 +67,7 @@ const useInitCytoscape = ({
         style: [],
         ...memoizedConfig,
       });
+      cy.complexityManagement();
 
       cy.on("layoutstart", () => {
         cy.userPanningEnabled(false);

@@ -1,9 +1,11 @@
 import cytoscape from "cytoscape";
 import cyCanvas from "cytoscape-canvas";
+import complexityManagement from "cytoscape-complexity-management/dist/cytoscape-complexity-management.umd.js";
 import d3Force from "cytoscape-d3-force";
 import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
 import klay from "cytoscape-klay";
+import layoutUtilities from "cytoscape-layout-utilities";
 import {
   type ComponentPropsWithoutRef,
   memo,
@@ -42,13 +44,13 @@ import useManageStyles from "./hooks/useManageStyles";
 import useRenderBadges from "./hooks/useRenderBadges";
 import useUpdateLayout from "./hooks/useRunLayout";
 import useUpdateGraphElements from "./hooks/useUpdateGraphElements";
-import layoutUtilities from "cytoscape-layout-utilities";
 
 cytoscape.use(klay);
 cytoscape.use(dagre);
 cytoscape.use(d3Force);
 cytoscape.use(fcose);
 cytoscape.use(layoutUtilities);
+cytoscape.use(complexityManagement);
 cyCanvas(cytoscape);
 
 const EMPTY_SET = new Set<string>();
