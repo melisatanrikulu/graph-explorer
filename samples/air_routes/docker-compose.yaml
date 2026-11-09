@@ -1,8 +1,8 @@
 services:
   app:
-    image: public.ecr.aws/neptune/graph-explorer:latest
+    image: graph-explorer-app
     ports:
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:8081:80"
     environment:
       - HOST=localhost
       - GRAPH_TYPE=gremlin
