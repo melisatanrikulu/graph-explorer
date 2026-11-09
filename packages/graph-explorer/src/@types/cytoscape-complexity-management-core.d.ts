@@ -1,7 +1,11 @@
-import "cytoscape";
+import type cytoscape from "cytoscape";
+
+type ComplexityManagementOptions = {
+  layoutBy?: cytoscape.LayoutOptions | null;
+};
 
 declare module "cytoscape" {
   interface Core {
-    complexityManagement(): unknown;
+    complexityManagement(options?: ComplexityManagementOptions): unknown;
   }
 }

@@ -7,6 +7,8 @@ import { useDeepMemo } from "@/hooks";
 import type { GraphProps } from "../Graph";
 import type { Config, CytoscapeType } from "../Graph.model";
 
+import { availableLayoutsConfig } from "../helpers/layoutConfig";
+
 export interface UseInitCytoscapeProps extends Required<
   Pick<GraphProps, keyof Omit<Config, "minZoom" | "maxZoom" | "pan">>
 > {
@@ -67,7 +69,9 @@ const useInitCytoscape = ({
         style: [],
         ...memoizedConfig,
       });
-      cy.complexityManagement();
+      cy.complexityManagement({
+        layoutBy: availableLayoutsConfig.F_COSE as cytoscape.LayoutOptions,
+      });
 
       cy.on("layoutstart", () => {
         cy.userPanningEnabled(false);
