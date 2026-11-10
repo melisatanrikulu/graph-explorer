@@ -37,6 +37,7 @@ import useBlastRadius from "./hooks/useBlastRadius";
 import useConnectionsFilter from "./hooks/useConnectionsFilter";
 import useInitCytoscape from "./hooks/useInitCytoscape";
 import { useManageConfigChanges } from "./hooks/useManageConfigChanges";
+import useManageElementHover from "./hooks/useManageElementHover";
 import useManageElementsLock from "./hooks/useManageElementsLock";
 import useManageElementsSelection from "./hooks/useManageElementsSelection";
 import useManageElementsVisibility from "./hooks/useManageElementsVisibility";
@@ -317,6 +318,8 @@ export const Graph = ({
     defaultEdgeLabelAttribute,
     hideDefaultEdgeLabels,
   });
+
+  useManageElementHover(cy);
 
   useAddClickEvents({
     cy,

@@ -6,11 +6,18 @@ import type { RenderedVertexId } from "@/core";
 
 const useNodeBadges = () => {
   return (outOfFocusIds: Set<RenderedVertexId>): BadgeRenderer =>
-    (nodeData, boundingBox, { zoomLevel }) => {
+    (
+      nodeData,
+      boundingBox,
+      { isCompoundParent, isHovered, isSelected, zoomLevel },
+    ) => {
       return [
         {
           text: nodeData.displayName,
-          hidden: zoomLevel === "small" || outOfFocusIds.has(nodeData.id),
+          hidden:
+            zoomLevel === "small" ||
+            outOfFocusIds.has(nodeData.id) ||
+            (!isCompoundParent && !isHovered && !isSelected),
           title: zoomLevel === "large" ? nodeData.displayTypes : undefined,
           maxWidth: zoomLevel === "large" ? 80 : 50,
           anchor: "center",

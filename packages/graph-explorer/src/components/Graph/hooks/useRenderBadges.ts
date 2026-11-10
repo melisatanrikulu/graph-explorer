@@ -14,6 +14,7 @@ import type { CytoscapeCanvas, CytoscapeType } from "../Graph.model";
 
 import getNodeBoundingBox from "../helpers/getNodeBoundingBox";
 import getZoomLevel from "../helpers/getZoomLevel";
+import { LABEL_HOVER_CLASS } from "../labelVisibility";
 
 export type Badge = DrawBoxWithAdornmentOptions & {
   boundingBox: AutoBoundingBox;
@@ -25,6 +26,9 @@ export type BadgeRenderer = (
   boundingBox: BoundingBox,
   options: {
     context: CanvasRenderingContext2D;
+    isCompoundParent: boolean;
+    isHovered: boolean;
+    isSelected: boolean;
     zoomLevel: "small" | "medium" | "large";
   },
 ) => Array<Badge | undefined>;
@@ -129,6 +133,9 @@ const useRenderBadges = ({
           const nodeBoundingBox = getNodeBoundingBox(node);
           const badges = getNodeBadges(nodeData, nodeBoundingBox, {
             context,
+            isCompoundParent: node.isParent(),
+            isHovered: node.hasClass(LABEL_HOVER_CLASS),
+            isSelected: node.selected(),
             zoomLevel,
           });
           badges.forEach(badge => {
@@ -146,9 +153,11 @@ const useRenderBadges = ({
 
       // Wire up the resize event to re-render the badges
       cy.on("render", onCanvasResize);
+      cy.on("mouseover mouseout select unselect", "node", onCanvasResize);
 
       return () => {
         cy.off("render", onCanvasResize);
+        cy.off("mouseover mouseout select unselect", "node", onCanvasResize);
       };
     }
   }, [cy, badgesEnabled, mounted, getNodeBadges, getGroupBadges]);

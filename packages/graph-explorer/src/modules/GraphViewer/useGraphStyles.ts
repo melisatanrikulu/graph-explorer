@@ -3,6 +3,7 @@ import { useDeferredValue } from "react";
 
 import type { GraphProps } from "@/components/Graph";
 
+import { LABEL_HOVER_CLASS } from "@/components/Graph/labelVisibility";
 import {
   type EdgeStyle,
   useAllEdgeStyles,
@@ -89,6 +90,25 @@ function createGraphStyles(
       "target-distance-from-node": 0,
     };
   }
+
+  styles["edge[!compound]"] = {
+    "text-opacity": 0,
+    "text-background-opacity": 0,
+    "text-border-opacity": 0,
+  };
+
+  for (const etConfig of deferredEtConfigs) {
+    const visibleLabelStyle = {
+      "text-opacity": 1,
+      "text-background-opacity": etConfig.labelBackgroundOpacity,
+      "text-border-opacity": etConfig.labelBorderWidth ? 1 : 0,
+    };
+
+    styles[`edge[type="${etConfig.type}"][!compound].${LABEL_HOVER_CLASS}`] =
+      visibleLabelStyle;
+    styles[`edge[type="${etConfig.type}"][!compound]:selected`] =
+      visibleLabelStyle;
+  }
   styles["node:parent"] = {
     shape: "round-rectangle",
     "background-image": "none",
@@ -106,6 +126,7 @@ function createGraphStyles(
     label: "data(size)",
     "line-style": "dashed",
     "target-arrow-shape": "none",
+    "text-opacity": 1,
     events: "no",
   };
   return styles;
