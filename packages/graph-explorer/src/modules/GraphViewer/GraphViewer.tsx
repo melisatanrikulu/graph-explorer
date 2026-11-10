@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import type { ElementEventCallback } from "@/components/Graph/hooks/useAddClickEvents";
+import type { LabelVisibilityMode } from "@/components/Graph/labelVisibility";
 
 import {
   Button,
@@ -32,6 +33,7 @@ import {
   ZoomOutButton,
   ZoomToFitButton,
 } from "@/components/Graph";
+import { DEFAULT_LABEL_VISIBILITY_MODE } from "@/components/Graph/labelVisibility";
 import {
   DEFAULT_LAYOUT_NAME,
   createRenderedEdgeId,
@@ -56,6 +58,7 @@ import { ExportGraphButton } from "./ExportGraphButton";
 import { GraphViewerEmptyState } from "./GraphViewerEmptyState";
 import { ImportGraphButton } from "./ImportGraphButton";
 import ContextMenu from "./internalComponents/ContextMenu";
+import { LabelVisibilitySelector } from "./LabelVisibilitySelector";
 import { MultiEdgeControls } from "./MultiEdgeControls";
 import { nestGraphElements } from "./nestGraphElements";
 import { NestingEdgeTypeSelector } from "./NestingEdgeTypeSelector";
@@ -119,6 +122,8 @@ function GraphViewerContent({
   };
 
   const [legendOpen, setLegendOpen] = useState(false);
+  const [labelVisibilityMode, setLabelVisibilityMode] =
+    useState<LabelVisibilityMode>(DEFAULT_LABEL_VISIBILITY_MODE);
   const [nestingEdgeTypes, setNestingEdgeTypes] = useState<Set<EdgeType>>(
     new Set(),
   );
@@ -136,7 +141,7 @@ function GraphViewerContent({
     renderContextLayer,
   } = useContextMenu();
 
-  const styles = useGraphStyles();
+  const styles = useGraphStyles(labelVisibilityMode);
   const getNodeBadges = useNodeBadges();
 
   const { expandNode } = useExpandNode();
@@ -171,6 +176,10 @@ function GraphViewerContent({
               className="max-w-64 min-w-auto"
               layoutAtom={graphLayoutSelectionAtom}
             />
+            <LabelVisibilitySelector
+              value={labelVisibilityMode}
+              onChange={setLabelVisibilityMode}
+            />
             <RerunLayoutButton />
             <ZoomToFitButton />
             <NestingEdgeTypeSelector
@@ -203,7 +212,10 @@ function GraphViewerContent({
             nodes={nestedGraph.nodes}
             edges={nestedGraph.edges}
             badgesEnabled={false}
-            getNodeBadges={getNodeBadges(nodesOutRenderedIds)}
+            getNodeBadges={getNodeBadges(
+              nodesOutRenderedIds,
+              labelVisibilityMode,
+            )}
             selectedNodesIds={selectedVertices}
             selectedEdgesIds={selectedEdges}
             outOfFocusNodesIds={nodesOutRenderedIds}

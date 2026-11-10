@@ -2,8 +2,13 @@ import Color from "color";
 import { useDeferredValue } from "react";
 
 import type { GraphProps } from "@/components/Graph";
+import type { LabelVisibilityMode } from "@/components/Graph/labelVisibility";
 
-import { LABEL_HOVER_CLASS } from "@/components/Graph/labelVisibility";
+import {
+  DEFAULT_LABEL_VISIBILITY_MODE,
+  LABEL_HOVER_CLASS,
+  LIGHTENED_LABEL_OPACITY,
+} from "@/components/Graph/labelVisibility";
 import {
   type EdgeStyle,
   useAllEdgeStyles,
@@ -20,7 +25,13 @@ const LINE_PATTERN = {
   dotted: [1, 2],
 };
 
-export default function useGraphStyles() {
+function lightenOpacity(opacity: number): number {
+  return Math.round(opacity * LIGHTENED_LABEL_OPACITY * 100) / 100;
+}
+
+export default function useGraphStyles(
+  labelVisibilityMode: LabelVisibilityMode = DEFAULT_LABEL_VISIBILITY_MODE,
+) {
   const vtConfigs = useAllVertexStyles();
   const etConfigs = useAllEdgeStyles();
 
@@ -33,6 +44,7 @@ export default function useGraphStyles() {
     deferredVtConfigs,
     deferredEtConfigs,
     backgroundImageMap,
+    labelVisibilityMode,
   );
 }
 
@@ -40,6 +52,7 @@ function createGraphStyles(
   deferredVtConfigs: VertexStyle[],
   deferredEtConfigs: EdgeStyle[],
   backgroundImageMap: Map<VertexType, string>,
+  labelVisibilityMode: LabelVisibilityMode,
 ): GraphProps["styles"] {
   const styles: GraphProps["styles"] = {};
 
@@ -91,23 +104,40 @@ function createGraphStyles(
     };
   }
 
-  styles["edge[!compound]"] = {
-    "text-opacity": 0,
-    "text-background-opacity": 0,
-    "text-border-opacity": 0,
-  };
-
-  for (const etConfig of deferredEtConfigs) {
-    const visibleLabelStyle = {
-      "text-opacity": 1,
-      "text-background-opacity": etConfig.labelBackgroundOpacity,
-      "text-border-opacity": etConfig.labelBorderWidth ? 1 : 0,
+  if (labelVisibilityMode === "contextual") {
+    styles["edge[!compound]"] = {
+      "text-opacity": 0,
+      "text-background-opacity": 0,
+      "text-border-opacity": 0,
     };
+  }
 
-    styles[`edge[type="${etConfig.type}"][!compound].${LABEL_HOVER_CLASS}`] =
-      visibleLabelStyle;
-    styles[`edge[type="${etConfig.type}"][!compound]:selected`] =
-      visibleLabelStyle;
+  if (labelVisibilityMode !== "always-visible") {
+    for (const etConfig of deferredEtConfigs) {
+      if (labelVisibilityMode === "lightened") {
+        styles[`edge[type="${etConfig.type}"][!compound]`] = {
+          "text-opacity": LIGHTENED_LABEL_OPACITY,
+          "text-background-opacity":
+            etConfig.labelBackgroundOpacity === undefined
+              ? undefined
+              : lightenOpacity(etConfig.labelBackgroundOpacity),
+          "text-border-opacity": etConfig.labelBorderWidth
+            ? LIGHTENED_LABEL_OPACITY
+            : 0,
+        };
+      }
+
+      const visibleLabelStyle = {
+        "text-opacity": 1,
+        "text-background-opacity": etConfig.labelBackgroundOpacity,
+        "text-border-opacity": etConfig.labelBorderWidth ? 1 : 0,
+      };
+
+      styles[`edge[type="${etConfig.type}"][!compound].${LABEL_HOVER_CLASS}`] =
+        visibleLabelStyle;
+      styles[`edge[type="${etConfig.type}"][!compound]:selected`] =
+        visibleLabelStyle;
+    }
   }
   styles["node:parent"] = {
     shape: "round-rectangle",
