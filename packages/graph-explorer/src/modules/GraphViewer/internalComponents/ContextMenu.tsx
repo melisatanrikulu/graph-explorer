@@ -9,6 +9,7 @@ import {
   CircleSlash2,
   FullscreenIcon,
   ImageDownIcon,
+  ListCollapseIcon,
   MinusCircleIcon,
   RefreshCwIcon,
   ZoomInIcon,
@@ -17,7 +18,11 @@ import {
 import { createContext, use } from "react";
 
 import { Divider, EdgeIcon, GraphIcon, StylingIcon } from "@/components";
-import { useGraphGlobalActions } from "@/components/Graph";
+import {
+  type CytoscapeType,
+  useGraphGlobalActions,
+  useGraphRef,
+} from "@/components/Graph";
 import {
   CenterGraphIcon,
   DetailsIcon,
@@ -25,8 +30,10 @@ import {
 } from "@/components/icons";
 import {
   type EdgeId,
+  createRenderedVertexId,
   graphViewLayoutAtom,
   type GraphViewSidebarItem,
+  type RenderedVertex,
   useDisplayEdgeInCanvas,
   useDisplayVertex,
   type VertexId,
@@ -51,6 +58,23 @@ type ContextMenuProps = {
   affectedEdgesIds: EdgeId[];
   onClose(): void;
 };
+
+function getVisibleLeafNeighborIds(
+  cy: CytoscapeType,
+  vertexId: VertexId,
+): VertexId[] {
+  const source = cy.getElementById(createRenderedVertexId(vertexId)).nodes();
+  if (source.empty()) return [];
+
+  return source
+    .neighborhood("node")
+    .filter(neighbor =>
+      neighbor
+        .neighborhood("node")
+        .every(connectedNode => source.contains(connectedNode)),
+    )
+    .map(node => (node.data() as RenderedVertex["data"]).vertexId);
+}
 
 export default function ContextMenu({
   affectedNodesIds,
@@ -91,6 +115,7 @@ export default function ContextMenu({
 }
 
 function SingleVertexMenu({ vertexId }: { vertexId: VertexId }) {
+  const graphRef = useGraphRef();
   const t = useTranslations();
   const vertex = useDisplayVertex(vertexId);
   const setLayout = useSetAtom(graphViewLayoutAtom);
@@ -109,6 +134,15 @@ function SingleVertexMenu({ vertexId }: { vertexId: VertexId }) {
       vertexId,
       limit: defaultNeighborExpansionLimit ?? undefined,
     });
+  const handleCollapseNeighbors = () => {
+    const cy = graphRef.current?.cytoscape;
+    if (!cy) return;
+
+    removeFromGraph({
+      vertices: getVisibleLeafNeighborIds(cy, vertexId),
+      edges: [],
+    });
+  };
 
   const openSidebarPanel = (panelName: GraphViewSidebarItem) => () => {
     setLayout(prev => ({ ...prev, activeSidebarItem: panelName }));
@@ -133,6 +167,10 @@ function SingleVertexMenu({ vertexId }: { vertexId: VertexId }) {
       <ContextMenuItem onClick={handleExpand}>
         <ExpandGraphIcon />
         Expand {t("node").toLowerCase()}
+      </ContextMenuItem>
+      <ContextMenuItem onClick={handleCollapseNeighbors}>
+        <ListCollapseIcon />
+        Collapse leaf neighbors
       </ContextMenuItem>
       <ContextMenuItem onClick={handleRefresh}>
         <RefreshCwIcon />
